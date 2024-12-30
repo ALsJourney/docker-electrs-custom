@@ -1,0 +1,30 @@
+services:
+  electrs:
+    container_name: electrs
+    build: 
+      context: ./
+      args: 
+        VERSION: "v0.10.7" #electrs version
+    image: mu373/docker-electrs
+    volumes:
+      - /mnt/electrs/config.toml:/data/.electrs/config.toml
+      - /mnt/electrs/electrs-data:/electrs/data
+    restart: always
+    # ports:
+      # Port 50001 does not have to be exposed to the host when using nginx reverse proxy for SSL connection
+      # - 50001:50001 #Mainnet RPC
+  nginx:
+    container_name: electrs_nginx
+    image: nginx:latest
+    restart: always
+    ports:
+      - "50002:50002"
+    volumes:
+      - /mnt/electrs/nginx/nginx.conf:/etc/nginx/nginx.conf 
+      - /mnt/electrs/nginx/conf.stream.d/electrs.conf:/etc/nginx/conf.stream.d/electrs.conf 
+      - /mnt/electrs/cert.crt:/nginx/cert.crt
+      - /mnt/electrs/cert.key:/nginx/cert.key
+networks:
+  default:
+    name: bitcoin-nw
+    external: true
